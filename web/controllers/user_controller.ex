@@ -1,9 +1,10 @@
 defmodule Life.UserController do
   use Life.Web, :controller
 
+  plug Guardian.Plug.EnsureAuthenticated, handler: __MODULE__
+
   alias Life.User
   alias Life.ChangesetView
-
 
   def show(conn, %{"id" => id}) do
     case Repo.get(User, id) do
@@ -24,5 +25,11 @@ defmodule Life.UserController do
       {:error, changeset} ->
         render(conn, "error.json", changeset: changeset)
     end
+  end
+
+  def unauthenticated(conn, _params) do
+    conn
+    |> put_status(401)
+    |> render(Life.ErrorView, "401.json")
   end
 end

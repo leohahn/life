@@ -3,13 +3,24 @@ defmodule Life.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
   end
 
-  scope "/api", Life do
-    pipe_through :api
+  pipeline :api_auth do
+    plug Guardian.Plug.VerifyHeader, realm: "Bearer"
+    plug Guardian.Plug.LoadResource
+  end
 
-    #resources "/session", SessionController, [:create, :delete]
-    resources "/users", UserController, [:create, :show]
+  scope "/", Life do
+    post "/users", UserController, :create
+    post "/sessions", SessionController, :create
+  end
+  # Rest of /api is secured through JWT.
+  scope "/api", Life do
+    pipe_through [:api, :api_auth]
+    # Logout
+    #delete "/sessions", SessionController, :delete
+    #resources "/users", UserController, only: [:show]
     resources "/games", GameController, only: [:index, :show]
   end
 end
