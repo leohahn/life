@@ -1,7 +1,8 @@
 defmodule Life.UserController do
   use Life.Web, :controller
 
-  plug Guardian.Plug.EnsureAuthenticated, handler: __MODULE__
+  plug Guardian.Plug.EnsureAuthenticated,
+    [handler: __MODULE__] when action in [:show]
 
   alias Life.User
   alias Life.ChangesetView

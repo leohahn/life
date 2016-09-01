@@ -3,6 +3,9 @@ defmodule Life.SessionController do
 
   alias Life.User
 
+  plug Guardian.Plug.EnsureAuthenticated,
+    [handler: __MODULE__] when action in [:delete]
+
   def create(conn, %{"session" => %{"username" => user,
                                     "password" => pass}}) do
     case User.find_and_confirm_password(user, pass) do
@@ -30,8 +33,15 @@ defmodule Life.SessionController do
   end
 
   def delete(conn, _params) do
+    jwt = Guardian.Plug.current_token(conn)
+    {:ok, claims} = Guardian.Plug.claims(conn)
+    Guardian.revoke!(jwt, claims)
+    render(conn, "logout.json")
+  end
+
+  def unauthenticated(conn, _params) do
     conn
-    |> Guardian.Plug.sign_out()
-    |> send_resp(200, "")
+    |> put_status(401)
+    |> render(Life.ErrorView, "401.json", %{})
   end
 end

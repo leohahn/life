@@ -1,12 +1,14 @@
 defmodule Life.GameController do
   use Life.Web, :controller
 
-  def index(conn, _params) do
+  plug Guardian.Plug.EnsureAuthenticated, handler: __MODULE__
+
+  def index(conn, _params, current_user) do
     games = Repo.all(Life.Game)
     render(conn, "index.json", games: games)
   end
 
-  def show(conn, %{"id" => id}) do
+  def show(conn, %{"id" => id}, current_user) do
     case Repo.get(Life.Game, id) do
       game ->
         render(conn, "show.json", game: game)
@@ -14,5 +16,17 @@ defmodule Life.GameController do
       nil ->
         render(conn, "404.json")
     end
+  end
+
+  def unauthenticated(conn, _params) do
+    conn
+    |> put_status(401)
+    |> render(ErrorView, "401.json", %{})
+  end
+
+  def action(conn, _) do
+    user = Guardian.Plug.current_resource(conn)
+    args = [conn, conn.params, user]
+    apply(__MODULE__, action_name(conn), args)
   end
 end

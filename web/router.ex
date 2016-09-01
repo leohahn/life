@@ -11,16 +11,14 @@ defmodule Life.Router do
     plug Guardian.Plug.LoadResource
   end
 
-  scope "/", Life do
-    post "/users", UserController, :create
-    post "/sessions", SessionController, :create
-  end
+  post "/api/users", Life.UserController, :create
+  post "/api/sessions", Life.SessionController, :create
   # Rest of /api is secured through JWT.
   scope "/api", Life do
     pipe_through [:api, :api_auth]
     # Logout
-    #delete "/sessions", SessionController, :delete
-    #resources "/users", UserController, only: [:show]
-    resources "/games", GameController, only: [:index, :show]
+    delete "/sessions", SessionController, :delete
+    resources "/users", UserController, only: [:show]
+    resources "/games", GameController
   end
 end

@@ -7,6 +7,10 @@ defmodule Life.SessionView do
                   "exp" => exp}}
   end
 
+  def render("logout.json", _params) do
+    %{"ok" => "Sucessfully logged out."}
+  end
+
   defp render_user(user) do
     %{"username" => user.username,
       "name" => user.name}
