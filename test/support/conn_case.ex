@@ -14,6 +14,8 @@ defmodule Life.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+  import Life.Factory
+  import Plug.Conn, only: [put_req_header: 3]
 
   using do
     quote do
@@ -39,6 +41,16 @@ defmodule Life.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(Life.Repo, {:shared, self()})
     end
 
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+    conn = Phoenix.ConnTest.build_conn()
+    case tags[:login_as] do
+      nil ->
+        {:ok, conn: conn}
+
+      username ->
+        user = insert(:user, username: username)
+        {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
+        {:ok, %{conn: put_req_header(conn, "authorization", "Bearer #{jwt}"),
+                user: user}}
+    end
   end
 end
