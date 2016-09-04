@@ -21,7 +21,7 @@ defmodule Life.GameController do
   def unauthenticated(conn, _params) do
     conn
     |> put_status(401)
-    |> render(ErrorView, "401.json", %{})
+    |> render(Life.ErrorView, "401.json", %{})
   end
 
   def action(conn, _) do

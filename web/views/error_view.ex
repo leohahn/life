@@ -10,7 +10,7 @@ defmodule Life.ErrorView do
   end
 
   def render("401.json", _assigns) do
-    %{erros: %{detail: "Unauthorized"}}
+    %{errors: %{detail: "Unauthorized"}}
   end
 
   # In case no render clause matches or no

@@ -26,7 +26,7 @@ defmodule Life.ConnCase do
       import Ecto.Query
 
       import Life.Router.Helpers
-
+      import Life.Factory # Add factory to facilitate database insertion.
       # The default endpoint for testing
       @endpoint Life.Endpoint
     end

@@ -19,6 +19,6 @@ defmodule Life.Router do
     # Logout
     delete "/sessions", SessionController, :delete
     resources "/users", UserController, only: [:show]
-    resources "/games", GameController
+    resources "/games", GameController, only: [:index, :show]
   end
 end

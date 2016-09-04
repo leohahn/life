@@ -1,38 +1,33 @@
 defmodule Life.GameControllerTest do
   use Life.ConnCase
-  alias Life.Game
+  use Life.Web, :controller
 
+  setup %{conn: conn} = config do
+    if username = config[:login_as] do
+      user = insert(:user, username: username)
+      {:ok, jwt, full_claims} = Guardian.encode_and_sign(user)
+      # {:ok, %{user: user, jwt: jwt, claims: full_claims}}
+      {:ok, %{conn: put_req_header(conn, "authorization", "Bearer #{jwt}"),
+              user: user}}
+    else
+      {:ok, config}
+    end
+  end
 
-  test "Listing all games", %{conn: conn} do
-    game1 = insert_game("GUEIMI")
+  test "user needs to be authenticated", %{conn: conn} do
     conn = get conn, game_path(conn, :index)
-
-    assert json_response(conn, 200)["data"] ==
-      [game_to_json(game1)]
-
-    game2 = insert_game("GUEIMI DOIS")
-    conn = get conn, game_path(conn, :index)
-
-    assert json_response(conn, 200)["data"] ==
-      [game_to_json(game1), game_to_json(game2)]
+    assert json_response(conn, 401) == render_error_json("401.json")
   end
 
-  test "List one game by id", %{conn: conn} do
-    game1 = insert_game("Pokemon")
-    conn = get conn, game_path(conn, :show, game1.id)
-
-    assert json_response(conn, 200)["data"] ==
-      game_to_json(game1)
+  defp render_json(template, assigns \\ %{}) do
+    Life.GameView.render(template, assigns)
+    |> Poison.encode!
+    |> Poison.decode!
   end
 
-  defp game_to_json(game) do
-    %{"id" => game.id,
-      "dimension" => game.dimension,
-      "state" => game.state,
-      "name" => game.name}
-  end
-
-  defp insert_game(name) do
-    Repo.insert!(%Game{name: name, dimension: 2, state: [1,2,3,4]})
+  defp render_error_json(template, assigns \\ %{}) do
+    Life.ErrorView.render(template, assigns)
+    |> Poison.encode!
+    |> Poison.decode!
   end
 end
